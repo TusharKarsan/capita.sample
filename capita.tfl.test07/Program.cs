@@ -40,13 +40,14 @@ namespace capita.tfl.test07
         BlockingCollection<int> bCollectionB = null;
 
         Task outer, producerThread, consumerThread;
+        TaskFactory factory = new TaskFactory(TaskCreationOptions.LongRunning, TaskContinuationOptions.None);
 
         public void Start()
         {
             bCollectionA = new BlockingCollection<int>(boundedCapacity: 4);
             cancellationOuter = new CancellationTokenSource();
 
-            outer = Task.Factory.StartNew(() =>
+            outer = factory.StartNew(() =>
             {
                 var rnd = new Random();
                 while (!cancellationOuter.IsCancellationRequested)
@@ -97,7 +98,7 @@ namespace capita.tfl.test07
             cancellationToken = new CancellationTokenSource();
             bCollectionB = new BlockingCollection<int>(boundedCapacity: 4);
 
-            producerThread = Task.Factory.StartNew(() =>
+            producerThread = factory.StartNew(() =>
             {
                 int val = 0;
                 while (!bCollectionA.IsCompleted && !cancellationToken.IsCancellationRequested)
@@ -121,7 +122,7 @@ namespace capita.tfl.test07
                 bCollectionB.CompleteAdding();
             });
 
-            consumerThread = Task.Factory.StartNew(() =>
+            consumerThread = factory.StartNew(() =>
             {
                 int val = 0;
                 while (!bCollectionB.IsCompleted && !cancellationToken.IsCancellationRequested)
